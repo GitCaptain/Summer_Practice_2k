@@ -1,5 +1,5 @@
 from fraction import Fraction
-
+from tester import tester
 
 class RPN:
     def __init__(self, string):
@@ -113,6 +113,5 @@ class RPN:
                 self.operands.append(l_operand / r_operand)
 
 if __name__ == '__main__':
-    # R = RPN('.5huesos + 2.5huesos')
-    # print(R)
-    print(RPN(input()))
+    tester("tests_for_RPN.txt", RPN)
+    # print(RPN(input()))
