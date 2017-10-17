@@ -1,0 +1,6 @@
+a = Fraction({'xy':5, 'y':5}, {'zyx':12, 'y':1})
+a.reduce_fraction()
+print(a)
+a = Fraction({'xy':5, 'pyx':5}, {'zyx':25, 'cyx':15})
+a.reduce_fraction()
+print(a)

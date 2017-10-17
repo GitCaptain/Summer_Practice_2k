@@ -113,5 +113,5 @@ class RPN:
                 self.operands.append(l_operand / r_operand)
 
 if __name__ == '__main__':
-    tester("tests_for_RPN.txt", RPN)
-    # print(RPN(input()))
+    # tester("tests_for_RPN.txt", RPN)
+    print(RPN(input()))

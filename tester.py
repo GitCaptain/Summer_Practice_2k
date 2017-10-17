@@ -5,7 +5,7 @@ def tester(file_name, funcs):
         i = 0
         while True:
             line = FILE.readline().split('_')
-            if line[0][0] == '#' or line[0] == '\n' or not line:
+            if not line or line[0] == '\n' or line[0][0] == '#':
                 break
             line[0] = line[0].strip()
             line[1] = line[1].strip()
