@@ -58,18 +58,23 @@ class Fraction:
         return self.__add__(other.__neg__())
 
     def __truediv__(self, other):  # деление = умножение на обратную дробь
+        if not other:
+            raise ArithmeticError
         return self.__mul__(Fraction(other.denominator, other.numerator))
 
     def __floordiv__(self, other):  # // делает тоже самое, что и /
         return self.__truediv__(other)
 
-    def __str__(self):
-        self = self.reduce_fraction()
-        zero = True
-        only_num = True
+    def __bool__(self):
         for val in self.numerator.values():
             if val:
-                zero = False
+                return True
+        return False
+
+    def __str__(self):
+        self = self.reduce_fraction()
+        zero = not self.__bool__()
+        only_num = True
 
         for key in self.denominator:
             if key != '1' and self.denominator[key] or\

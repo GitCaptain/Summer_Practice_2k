@@ -6,6 +6,11 @@ class RPN:
         self.string = string
         self.operations = []
         self.operands = []
+        try:
+            self.result = self.calc()
+        except Exception:
+            self.result = "ERROR. BAD EXPRESSION"
+
 
     @staticmethod
     def get_priority(operation):
@@ -88,10 +93,8 @@ class RPN:
         return self.operands[-1]
 
     def __str__(self):
-        try:
-            return str(self.calc())
-        except Exception:
-            return "ERROR. BAD EXPRESSION"
+        return str(self.result)
+
 
     def process_operation(self):
         operation = self.operations[-1]
@@ -113,5 +116,5 @@ class RPN:
                 self.operands.append(l_operand / r_operand)
 
 if __name__ == '__main__':
-    # tester("tests_for_RPN.txt", RPN)
-    print(RPN(input()))
+    tester("tests_for_RPN.txt", RPN)
+    # print(RPN(input()))
