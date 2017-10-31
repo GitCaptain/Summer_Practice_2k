@@ -2,7 +2,8 @@
 def tester(file_name, funcs):
     print('testing', file_name)
     with open(file_name) as FILE:
-        i = 0
+        test = 0
+        failed_tests = []
         while True:
             line = FILE.readline().split('_')
             if not line or line[0] == '\n' or line[0][0] == '#':
@@ -15,8 +16,11 @@ def tester(file_name, funcs):
             for func in funcs:
                 res = func(res)
             res = str(res)
-            print('test:', i)
-            print("result of functions for", line[0], 'is', res)
+            print('test:', test)
+            print('result of functions for', line[0], 'is', res)
             print(line[1], '==', res, line[1] == res)
             print()
-            i += 1
+            if line[1] != res:
+                failed_tests.append(test)
+            test += 1
+        print('failed tests:\n', failed_tests)

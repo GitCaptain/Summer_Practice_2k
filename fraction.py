@@ -1,5 +1,6 @@
 from tester import tester
 
+
 def gcd(a, b):
     if a != int(a) or b != int(b):
         return -1
@@ -74,20 +75,46 @@ class Fraction:
     def __str__(self):
         self = self.reduce_fraction()
         zero = not self.__bool__()
-        only_num = True
+        only_numerator = True
+        only_one_summand_in_denominator = len(self.denominator) == 1
+
+        if only_one_summand_in_denominator:
+            denominator_summand = self.denominator.popitem()
+            if denominator_summand[1] < 0:
+                self = self.__neg__()
+                denominator_summand = (denominator_summand[0], -denominator_summand[1])
+            self.denominator = {denominator_summand[0]: denominator_summand[1]}
 
         for key in self.denominator:
             if key != '1' and self.denominator[key] or\
-               key == '1' and self.denominator[key] > 1:
-                only_num = False
+               key == '1' and abs(self.denominator[key]) != 1:
+                only_numerator = False
 
         if zero:
             return '0'
-        elif only_num:
+        elif only_numerator:
             return Fraction.dict_to_string(self.numerator)
         else:
-            return '(' + Fraction.dict_to_string(self.numerator) + ')/' +\
-                   '(' + Fraction.dict_to_string(self.denominator) + ')'
+            res = ''
+            if len(self.numerator) == 1:
+                res += Fraction.dict_to_string(self.numerator)
+            else:
+                res += '(' + Fraction.dict_to_string(self.numerator) + ')'
+            res += '/'
+            if only_one_summand_in_denominator:
+                denominator_summand = self.denominator.popitem()
+                if denominator_summand[1] == 1 and len(denominator_summand[0]) == 1:
+                    res += denominator_summand[0]
+                elif denominator_summand[0] == '1':
+                    if denominator_summand[1] == int(denominator_summand[1]):
+                        res += str(int(denominator_summand[1]))
+                    else:
+                        res += str(denominator_summand[1])
+                else:
+                    res += '(' + Fraction.dict_to_string({denominator_summand[0]:denominator_summand[1]}) + ')'
+            else:
+                res += '(' + Fraction.dict_to_string(self.denominator) + ')'
+            return res
 
     @staticmethod
     def dictionary_multiplier(a, b): # a, b - dicts, return a*b
@@ -122,7 +149,7 @@ class Fraction:
                 res += '+'
             if abs(num) != 1 or key == '1':
                 res += str(num)
-            if num == -1:
+            if num == -1 and key != '1':
                 res += '-'
             first = False
             if key == '1':
@@ -184,6 +211,8 @@ class Fraction:
         common_in_numerator_and_denominator = common_in_numerator_and_denominator.popitem()
         new_numerator = Fraction.reduce_dictionary(self.numerator, common_in_numerator_and_denominator)
         new_denominator = Fraction.reduce_dictionary(self.denominator, common_in_numerator_and_denominator)
+        if self.numerator == self.denominator or new_numerator == new_denominator:
+            return Fraction({'1': 1}, {'1': 1})
         return Fraction(new_numerator, new_denominator)
         
 
