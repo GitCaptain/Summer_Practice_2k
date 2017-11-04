@@ -14,7 +14,10 @@ def tester(file_name, funcs):
                 funcs = [funcs]
             res = line[0]
             for func in funcs:
-                res = func(res)
+                try:
+                    res = func(res).calc_with_Fraction()
+                except Exception:
+                    res = "ERROR. BAD EXPRESSION"
             res = str(res)
             print('test:', test)
             print('result of functions for', line[0], 'is', res)

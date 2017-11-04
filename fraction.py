@@ -111,7 +111,7 @@ class Fraction:
                     else:
                         res += str(denominator_summand[1])
                 else:
-                    res += '(' + Fraction.dict_to_string({denominator_summand[0]:denominator_summand[1]}) + ')'
+                    res += '(' + Fraction.dict_to_string({denominator_summand[0]: denominator_summand[1]}) + ')'
             else:
                 res += '(' + Fraction.dict_to_string(self.denominator) + ')'
             return res
@@ -159,7 +159,6 @@ class Fraction:
             res += '*'.join(key)
         return res
 
-
     @staticmethod
     def find_common_multiplier_in_dict(dictionary):
         res_key = ""
@@ -180,7 +179,7 @@ class Fraction:
                     cur_common_str += letter * min(key.count(letter), res_key.count(letter))
                     used_letters.add(letter)
             res_key = cur_common_str
-        if res_num < 0:
+        if res_num <= 0:
             res_num = 1
         return {res_key: res_num}
 
@@ -199,20 +198,35 @@ class Fraction:
             result[''.join(sorted(new_key))] = dictionary[key]/divisor[1]
         return result
 
-    def reduce_fraction(self):  # тестить
+    def reduce_fraction(self):
         common_in_numerator = Fraction.find_common_multiplier_in_dict(self.numerator)
+        temp_item_in_commons = common_in_numerator.copy().popitem()
+        new_numerator = Fraction.reduce_dictionary(self.numerator, temp_item_in_commons)
+
         common_in_denominator = Fraction.find_common_multiplier_in_dict(self.denominator)
+        temp_item_in_commons = common_in_denominator.copy().popitem()
+        new_denominator = Fraction.reduce_dictionary(self.denominator, temp_item_in_commons)
+
+        if new_denominator == new_numerator:
+            new_denominator = {'1': 1}
+            new_numerator = {'1': 1}
+
         if common_in_denominator.keys() == common_in_numerator.keys():
-            common_item = common_in_numerator.popitem()
-            common_in_numerator_and_denominator = {common_item[0]: gcd(common_item[1], common_in_denominator[common_item[0]])}
+            common_item = common_in_numerator.copy().popitem()
+            common_in_numerator_and_denominator = {
+                common_item[0]: gcd(common_item[1], common_in_denominator[common_item[0]])}
         else:
-            common_in_numerator.update(common_in_denominator)
-            common_in_numerator_and_denominator = Fraction.find_common_multiplier_in_dict(common_in_numerator)
+            common_in_numerator_and_denominator = common_in_numerator.copy()
+            common_in_numerator_and_denominator.update(common_in_denominator)
+            common_in_numerator_and_denominator = Fraction.find_common_multiplier_in_dict(common_in_numerator_and_denominator)
+
         common_in_numerator_and_denominator = common_in_numerator_and_denominator.popitem()
-        new_numerator = Fraction.reduce_dictionary(self.numerator, common_in_numerator_and_denominator)
-        new_denominator = Fraction.reduce_dictionary(self.denominator, common_in_numerator_and_denominator)
-        if self.numerator == self.denominator or new_numerator == new_denominator:
-            return Fraction({'1': 1}, {'1': 1})
+        new_numerator = Fraction.dictionary_multiplier(new_numerator,
+            Fraction.reduce_dictionary(common_in_numerator, common_in_numerator_and_denominator))
+
+        new_denominator = Fraction.dictionary_multiplier(new_denominator,
+            Fraction.reduce_dictionary(common_in_denominator, common_in_numerator_and_denominator))
+
         return Fraction(new_numerator, new_denominator)
         
 

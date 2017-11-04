@@ -1,16 +1,55 @@
 from fraction import Fraction
 from tester import tester
 
+
 class RPN:
     def __init__(self, string):
-        self.string = string
-        self.operations = []
-        self.operands = []
-        try:
-            self.result = self.calc()
-        except Exception:
-            self.result = "ERROR. BAD EXPRESSION"
+        self.string = RPN.get_normal_string(string)
+        self.string_elements = self.string.split()
+        self.polish_notation_list = self.get_reversed_polish_notation()
+        #try:
+        #    self.result = self.old_calc()
+        #except Exception:
+        #    self.result = "ERROR. INCORRECT EXPRESSION"
 
+    @staticmethod
+    def get_normal_string(string):
+        string = string.replace(' ', '')
+        string_len = len(string)
+        normal_string = ''
+        i = 0
+        while i < string_len:
+            current_symbol = string[i]
+
+            if i == string_len-1:
+                next_symbol = ''
+            else:
+                next_symbol = string[i + 1]
+
+            if current_symbol.isalpha() and (next_symbol.isalpha() or next_symbol == '(' or next_symbol.isdigit()):
+                normal_string += current_symbol + ' *'
+
+            elif current_symbol.isdigit():
+                while current_symbol.isdigit() or current_symbol == '.':
+                    normal_string += current_symbol
+                    i += 1
+                    if i < len(string):
+                        current_symbol = string[i]
+                    else:
+                        break
+                if i < len(string):
+                    next_symbol = string[i]
+                    if next_symbol.isalpha() or next_symbol == '(':
+                        normal_string += ' *'
+                i -= 1
+
+            elif current_symbol == ')' and (next_symbol.isalpha() or next_symbol == '(' or next_symbol.isdigit()):
+                normal_string += current_symbol + ' *'
+            else:
+                normal_string += current_symbol
+            normal_string += ' '
+            i += 1
+        return normal_string
 
     @staticmethod
     def get_priority(operation):
@@ -28,9 +67,89 @@ class RPN:
 
     @staticmethod
     def usual(symbol):
-        return symbol.isdigit() or symbol.isalpha() or RPN.is_operation(symbol) or symbol in ('(', ')')
+        return symbol.replace('.', '', 1).isdigit() or symbol.isalpha() or RPN.is_operation(symbol) or symbol in ('(', ')')
 
-    def calc(self):
+    def get_reversed_polish_notation(self):
+        operations = list()
+        notation = list()
+        unary_operation = True
+        for element in self.string_elements:
+
+            if not RPN.usual(element):
+                continue
+
+            if element == '(':
+                operations.append(element)
+                unary_operation = True
+
+            elif element == ')':
+                while operations[-1] != '(':
+                    notation.append(operations[-1])
+                    operations.pop()
+                operations.pop()
+                unary_operation = False
+
+            elif RPN.is_operation(element):
+                if unary_operation and element in ('+', '-'):
+                    element = 'u' + element
+                while operations and \
+                        (not unary_operation and RPN.get_priority(operations[-1]) >= RPN.get_priority(element) or
+                         unary_operation and RPN.get_priority(operations[-1]) > RPN.get_priority(element)):
+                    notation.append(operations[-1])
+                    operations.pop()
+                operations.append(element)
+                unary_operation = True
+
+            else:
+                notation.append(element)
+                unary_operation = False
+
+        while operations:
+            notation.append(operations[-1])
+            operations.pop()
+
+        return notation
+
+    def calc_with_Fraction(self):
+
+        def process_operation(operation):
+            r_operand = operands[-1];
+            operands.pop()
+            if operation[0] == 'u':
+                if operation == 'u-':
+                    operands.append(-r_operand)
+                if operation == 'u+':
+                    operands.append(r_operand)
+            else:
+                l_operand = operands[-1];
+                operands.pop()
+                if operation == '+':
+                    operands.append(l_operand + r_operand)
+                if operation == '-':
+                    operands.append(l_operand - r_operand)
+                if operation == '*':
+                    operands.append(l_operand * r_operand)
+                if operation == '/':
+                    operands.append(l_operand / r_operand)
+
+        operands = list()
+        for element in self.polish_notation_list:
+            if RPN.is_operation(element):
+               process_operation(element)
+            else:
+                if element.isalpha():
+                    operands.append(Fraction({element: 1}))
+                else:
+                    operands.append(Fraction({'1': float(element)}))
+        return operands[-1]
+
+    def calc_with_tree(self):
+        pass
+
+    def __str__(self):
+        return str(self.result)
+
+    def old_calc(self):
         unary_operation = True
         i = 0
         while i < len(self.string):
@@ -46,7 +165,7 @@ class RPN:
 
             elif c == ')':
                 while self.operations[-1] != '(':
-                    self.process_operation()
+                    self.old_process_operation()
                     self.operations.pop()
                 self.operations.pop()
                 unary_operation = False
@@ -57,7 +176,7 @@ class RPN:
                 while self.operations and \
                         ( not unary_operation and RPN.get_priority(self.operations[-1]) >= RPN.get_priority(c) or
                         unary_operation and RPN.get_priority(self.operations[-1]) > RPN.get_priority(c)):
-                    self.process_operation()
+                    self.old_process_operation()
                     self.operations.pop()
                 self.operations.append(c)
                 unary_operation = True
@@ -87,16 +206,12 @@ class RPN:
             i += 1
 
         while self.operations:
-            self.process_operation()
+            self.old_process_operation()
             self.operations.pop()
 
         return self.operands[-1]
 
-    def __str__(self):
-        return str(self.result)
-
-
-    def process_operation(self):
+    def old_process_operation(self):
         operation = self.operations[-1]
         r_operand = self.operands[-1]; self.operands.pop()
         if operation[0] == 'u':
@@ -117,39 +232,41 @@ class RPN:
 
 if __name__ == '__main__':
     tester("tests_for_RPN.txt", RPN)
-    while True:
-         print(RPN(input("Введите выражение:\n")))
+    #while True:
+    #    line = input("Введите выражение:\n")
+    #    print(RPN(line).calc_with_Fraction())
+
+
+
+
+
+
+
+
+
+
+
 
 """
-5+3 _ 8
-xy+zy+5-7x+39xy-2 _ 3-7*x+40*x*y+y*z
-40x+7y-2x+5y-6x-20y _ 32*x-8*y
-kek/k _ e*k
-3x/5y _ (3*x)/(5*y)
-7*x(5y-47-z)-7x*z _ -47*x+5*x*y-8*x*z
-(kek + pek + ekk)/k/e _ 2*k+p
-1.5d + 5.d + 5d _ 11.5*d
-a/b+b/a+5 _ (a*a+5*a*b+b*b)/(a*b)
-2/0 _ ERROR. BAD EXPRESSION
-(x+1)/(x+1) _ 1
-y*(x-1)/(2y) _ (-1+x)/(2)
-(x-1)/(x-1) _ 1
-y*(x-1)/y _ -1+x
-x/x _ 1
-x/-x _ -1
-x-x _ 0
--x/-x _ 1
--x/x _ -1
+failed tests:
+ [5, 6, 7, 8, 9, 11, 12, 14, 16, 22]
+"""
 
 
 
 
-Введите выражение:
-x+x
-2*x
-Введите выражение:
-2*(x-3)+3x-4
--10+5*x
+
+
+
+
+
+
+
+
+
+
+
+"""
 Введите выражение:
 (y*(2x-2))/(6x-5+1) + 3y
 (-1-+10*x*y-6*y)/(-2+3*x)

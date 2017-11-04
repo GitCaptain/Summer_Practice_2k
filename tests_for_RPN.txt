@@ -1,10 +1,13 @@
-x-x _ 0
 5+3 _ 8
+11/7 _ 11/7
+5/5 _ 1
+15/5 _ 3
 xy+zy+5-7x+39xy-2 _ 3-7*x+40*x*y+y*z
 40x+7y-2x+5y-6x-20y _ 32*x-8*y
 kek/k _ e*k
-3x/5y _ 3*x/(5*y)
-7*x(5y-47-z)-7x*z _ -47*x+5*x*y-8*x*z
+3x/5y _ 3*x*y/5
+3x/(5y) _ 3*x/(5*y)
+x(5y-47-z)-7x*z _ -47*x+5*x*y-8*x*z
 (kek + pek + ekk)/k/e _ 2*k+p
 1.5d + 5.d + 5d _ 11.5*d
 a/b+b/a+5 _ (a*a+5*a*b+b*b)/(a*b)
@@ -18,9 +21,18 @@ x/-x _ -1
 -x/-x _ 1
 -x/x _ -1
 -x/-y _ x/y
--xyz/xyz _ -1
-xyz/-zyx _ -1
-xyz/yzx _ 1
--xyz/-zyx _ 1
+-xyz/(xyz) _ -1
+xyz/(-zyx) _ -1
+xyz/(yzx) _ 1
+-xyz/(-zyx) _ 1
+x-x _ 0
+(xy+xy)/2 _ x*y
+(xy+xy)/(xy) _ 2
+(xy+1)/(xy+1) _ 1
+x/0 _ ERROR. BAD EXPRESSION
+0/0 _ ERROR. BAD EXPRESSION
+1/1 _ 1
+x / (x-x) _ ERROR. BAD EXPRESSION
+(x+1)(y+1)/(y+1) _ (x+1)
 #format: test _ answer
 
