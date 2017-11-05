@@ -1,0 +1,6 @@
+a = {'xy':5, 'y':5}
+print(Fraction.reduce_dictionary(a, ('y', 5)))
+a = {'xyp': 15, 'zyx': 25}
+print(Fraction.reduce_dictionary(a, ('xy', 5)))
+a = {'kk': 15, 'spec': 70}
+print(Fraction.reduce_dictionary(a, ('', 5)))
