@@ -1,5 +1,7 @@
+from reverse_polish_notation import RPN
 
-def tester(file_name, funcs):
+
+def tester(file_name, *funcs):
     print('testing', file_name)
     with open(file_name) as FILE:
         test = 0
@@ -10,15 +12,12 @@ def tester(file_name, funcs):
                 break
             line[0] = line[0].strip()
             line[1] = line[1].strip()
-            if not isinstance(funcs, list):
-                funcs = [funcs]
             res = line[0]
-            for func in funcs:
-                try:
-                    res = func(res).calc_with_Fraction()
-                except Exception:
-                    res = "ERROR. BAD EXPRESSION"
-            res = str(res)
+            notation = RPN(res).get_reversed_polish_notation()
+            try:
+                res = str(funcs[0](notation))
+            except Exception:
+                res = "ERROR. BAD EXPRESSION"
             print('test:', test)
             print('result of functions for', line[0], 'is', res)
             print(line[1], '==', res, line[1] == res)

@@ -1,3 +1,4 @@
+from reverse_polish_notation import RPN
 from tester import tester
 
 
@@ -12,6 +13,14 @@ def gcd(a, b):
         else:
             b %= a
     return a + b
+
+
+def get_res(foo):
+    try:
+        res = foo(notation)
+    except Exception:
+        res = "ERROR. BAD EXPRESSION"
+    return res
 
 
 class Fraction:
@@ -230,23 +239,43 @@ class Fraction:
         return Fraction(new_numerator, new_denominator)
         
 
+def calc_with_fraction(polish_notation_list):
+    def process_operation(operation):
+        r_operand = operands[-1]
+        operands.pop()
+        if operation[0] == 'u':
+            if operation == 'u-':
+                operands.append(-r_operand)
+            if operation == 'u+':
+                operands.append(r_operand)
+        else:
+            l_operand = operands[-1]
+            operands.pop()
+            if operation == '+':
+                operands.append(l_operand + r_operand)
+            if operation == '-':
+                operands.append(l_operand - r_operand)
+            if operation == '*':
+                operands.append(l_operand * r_operand)
+            if operation == '/':
+                operands.append(l_operand / r_operand)
+
+    operands = list()
+    for element in polish_notation_list:
+        if RPN.is_operation(element):
+            process_operation(element)
+        else:
+            if element.isalpha():
+                operands.append(Fraction({element: 1}))
+            else:
+                operands.append(Fraction({'1': float(element)}))
+    return operands[-1]
+
+
 if __name__ == '__main__':
-    # tester("tests_for_find_common_multiplier_in_dict.txt", [eval, Fraction.find_common_multiplier_in_dict])
-    """
-    a = {'xy':5, 'y':5}
-    print(Fraction.reduce_dictionary(a, ('y', 5)))
-    a = {'xyp': 15, 'zyx': 25}
-    print(Fraction.reduce_dictionary(a, ('xy', 5)))
-    a = {'kk': 15, 'spec': 70}
-    print(Fraction.reduce_dictionary(a, ('', 5)))
-    """
-    """
-    a = Fraction({'xy':5, 'y':5}, {'zyx':12, 'y':1})
-    print(a.reduce_fraction(), a, sep = '\n')
-    a = Fraction({'xy':5, 'pyx':5}, {'zyx':25, 'cyx':15})
-    print(a.reduce_fraction(), a, sep='\n')
-    """
-    #tester("tests_for_reduce_dictionary.txt", [])
-    #a = Fraction({'xy': 5, 'y': 5}, {'zyx': 12, 'y': 1})
-    #print(a.reduce_fraction())
-    # tester("tests_for_reduce_fraction.txt", [])
+    tester("tests_for_RPN.txt", calc_with_fraction)
+    while True:
+        line = input("Введите выражение:\n")
+        notation = RPN(line).get_reversed_polish_notation()
+        res_fraction = get_res(calc_with_fraction)
+        print(res_fraction)
