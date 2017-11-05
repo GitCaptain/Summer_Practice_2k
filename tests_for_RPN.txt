@@ -33,6 +33,7 @@ x/0 _ ERROR. BAD EXPRESSION
 0/0 _ ERROR. BAD EXPRESSION
 1/1 _ 1
 x / (x-x) _ ERROR. BAD EXPRESSION
-(x+1)(y+1)/(y+1) _ (x+1)
+(x+1)(y+1)/(y+1) _ 1+x
+(y+1)/(y+1)*(x+1) _ 1+x
 #format: test _ answer
 

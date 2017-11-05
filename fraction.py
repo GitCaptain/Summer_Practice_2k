@@ -34,6 +34,8 @@ class Fraction:
             self.denominator[''.join(sorted(key))] = denom[key]
 
     def __add__(self, other):
+        self = self.reduce_fraction()
+
         result_num = dict(self.numerator)
         result_denom = dict(self.denominator)
         other_num = dict(other.numerator)
@@ -53,6 +55,7 @@ class Fraction:
         return Fraction(result_num, result_denom)
 
     def __mul__(self, other):
+        self = self.reduce_fraction()
         result_num = Fraction.dictionary_multiplier(self.numerator, other.numerator)
         result_denom = Fraction.dictionary_multiplier(self.denominator, other.denominator)
         return Fraction(result_num, result_denom)
