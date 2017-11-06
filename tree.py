@@ -30,19 +30,11 @@ def make_tree(index):
     return node, index
 
 
-def get_res(foo):
-    try:
-        res = foo(notation)
-    except Exception:
-        res = "ERROR. BAD EXPRESSION"
-    return res
-
-
 class Node:
 
     def __init__(self, operation=None, operand=None, *childs):
         self.parent = None
-        self.childs = list(childs)  # sorted(list(childs), key=lambda node=self: node.operand if node.operand else node.operation)
+        self.childs = list(childs)
         self.operand = operand
         self.operation = operation
 
@@ -59,21 +51,118 @@ class Node:
         else:
             return ''
 
+    @staticmethod
+    def sorted_node_childs(*childs):
+        return sorted(childs, key=lambda node: node.operand if node.operand else node.operation)
+
     def simplify_node(self):
+        # Добавить везде обработку чисел!
+
+        for child in self.childs:
+            child.simplify_node()
+
         if self.operation == '/':
-            # рассмотреть еще 100500 случаев
             if self.childs[0] == self.childs[1]:
                 self.operation = None
                 self.operand = 1
                 self.childs = list()
 
+            elif self.childs[0].replace('.', '', 1).isdigit() and self.childs[1].repace('.', '', 1).isdigit():
+                self.operation = None
+                self.operand = float(self.childs[0])/float(self.childs[1])
+                try:
+                    self.operand = int(self.operand)
+                except ValueError:
+                    pass
+                self.operand = str(self.operand)
+
+            elif self.childs[0].operation == self.childs[1].operation == '*':
+                delete_childs = dict()
+                for child_child in self.childs[0].childs:
+                    if delete_childs.get(child_child):
+                        continue
+                    delete_childs[child_child] = min(self.childs[0].childs.count(child_child),
+                                                     self.childs[1].childs.count(child_child))
+                for delete_child in delete_childs.keys():
+                    for i in range(delete_childs[delete_child]):
+                        self.childs[0].childs.remove(delete_child)
+                        self.childs[1].childs.remove(delete_child)
+
         elif self.operation == '*':
-            pass
+            new_childs = list()
+            delete_childs = list()
+            multiply_result = 1
+            for child in self.childs:
+                if child.operation == '*':
+                    new_childs.extend(child.childs)
+                    for new_child in child.childs:
+                        new_child.parent = self
+                elif child.operand and child.operand.replace('.', '', 1).isdigit():
+                    delete_childs.append(child)
+                    multiply_result *= float(child.operand)
+            multiply_result = str(multiply_result)
+            try:
+                multiply_result = str(int(multiply_result))
+            except ValueError:
+                pass
+
+            for child in delete_childs:
+                self.childs.remove(child)
+
+            multiply_result_node = Node(None, multiply_result)
+            multiply_result_node.parent = self
+            self.childs.append(multiply_result_node)
+            self.childs = Node.sorted_node_childs(new_childs)
 
         elif self.operation == '+':
-            pass
+            new_childs = list()
+            for child in self.childs:
+                if child.operation == '+' or child.operation == 'u+':
+                    new_childs.extend(child.childs)
+                    for new_child in child.childs:
+                        new_child.parent = self
+                else:
+                    new_childs.append(child)
+            operand_count = dict()
+            delete_childs = list()
+            for operand in self.childs:
+                if operand.operation:
+                    continue
+                if operand_count.get(operand):
+                    operand_count[operand] += 1
+                    delete_childs.append(operand)
+                else:
+                    operand_count[operand_count] = 1
+
+            for child in delete_childs:
+                self.childs.remove(child)
+
+            for operand in operand_count:
+                if operand_count[operand] == 1:
+                    self.childs.append(operand)
+                else:
+                    new_node_left_child = Node(None, str(operand_count[operand]))
+                    new_node_right_child = Node(None, operand)
+
+                    new_node = Node('*', None, new_node_left_child, new_node_right_child)
+                    new_node_left_child.parent = new_node
+                    new_node_right_child.parent = new_node
+                    new_node.parent = self
+
+                    self.childs.append(new_node)
+            self.childs = Node.sorted_node_childs(new_childs)
+
         elif self.operation == '-':
-            pass
+            if self.childs[0] == self.childs[1]:
+                self.operation = None
+                self.operand = '0'
+            elif self.childs[0].replace('.', '', 1).isdigit() and self.childs[1].repace('.', '', 1).isdigit():
+                self.operation = None
+                self.operand = str(float(self.childs[0]) - float(self.childs[1]))
+                try:
+                    self.operand = str(int(self.operand))
+                except ValueError:
+                    pass
 
 
 class Tree:
@@ -95,19 +184,42 @@ class Tree:
         self.root.simplify_node()
 
     def get_plain_tree(self):
-        pass
+
+        def make_string(current_node):
+            string = ''
+            if current_node.operand:
+                return current_node.operand
+            for child in current_node.childs:
+                if child.operation:
+                    string += '( ' + make_string(child) + ' )'
+                else:
+                    string += make_string(child)
+                if current_node.operation in ('u+', 'u-'):
+                    string += current_node.operation[1]
+                else:
+                    string += current_node.operation
+            return string[:-1]
+
+        return make_string(self.root)
+
+
+def get_res(foo):
+    try:
+        res = foo(notation)
+    except Exception:
+        res = "ERROR. BAD EXPRESSION"
+    return res
 
 
 def calc_with_tree(polish_notation_list):
     tree = Tree(polish_notation_list)
-    return tree
+    tree.simplify()
+    return tree.get_plain_tree()
 
 if __name__ == '__main__':
     #tester("tests_for_RPN.txt", calc_with_tree)
     while True:
         line = input("Введите выражение:\n")
         notation = RPN(line).get_reversed_polish_notation()
-        tree = Tree(notation)
-        #print(tree.root.childs[0] == tree.root.childs[1])
         res_tree = get_res(calc_with_tree)
         print(res_tree)
