@@ -47,7 +47,7 @@ class Fraction:
             other_num = Fraction.dictionary_multiplier(other.numerator, self.denominator)
 
         for key in other_num:
-            if key in result_num:
+            if result_num.get(key):
                 result_num[key] += other_num[key]
             else:
                 result_num[key] = other_num[key]
@@ -142,8 +142,11 @@ class Fraction:
                     key = Aitem[0]
                 else:
                     key = Aitem[0] + Bitem[0]
-
-                res[''.join(sorted(key))] = Aitem[1] * Bitem[1]
+                key = ''.join(sorted(key))
+                if res.get(key):
+                    res[key] += Aitem[1] * Bitem[1]
+                else:
+                    res[key] = Aitem[1] * Bitem[1]
 
         return res
 

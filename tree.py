@@ -35,6 +35,8 @@ class Node:
     def __init__(self, operation=None, operand=None, *childs):
         self.parent = None
         self.childs = list(childs)
+        if not operand:
+            operand = ''
         self.operand = operand
         self.operation = operation
 
@@ -67,7 +69,8 @@ class Node:
                 self.operand = 1
                 self.childs = list()
 
-            elif self.childs[0].replace('.', '', 1).isdigit() and self.childs[1].repace('.', '', 1).isdigit():
+            elif self.childs[0].operand.replace('.', '', 1).isdigit() and \
+                    self.childs[1].operand.repace('.', '', 1).isdigit():
                 self.operation = None
                 self.operand = float(self.childs[0])/float(self.childs[1])
                 try:
@@ -97,7 +100,7 @@ class Node:
                     new_childs.extend(child.childs)
                     for new_child in child.childs:
                         new_child.parent = self
-                elif child.operand and child.operand.replace('.', '', 1).isdigit():
+                elif child.operand.replace('.', '', 1).isdigit():
                     delete_childs.append(child)
                     multiply_result *= float(child.operand)
             multiply_result = str(multiply_result)
@@ -156,7 +159,7 @@ class Node:
             if self.childs[0] == self.childs[1]:
                 self.operation = None
                 self.operand = '0'
-            elif self.childs[0].replace('.', '', 1).isdigit() and self.childs[1].repace('.', '', 1).isdigit():
+            elif self.childs[0].operand.replace('.', '', 1).isdigit() and self.childs[1].operand.repace('.', '', 1).isdigit():
                 self.operation = None
                 self.operand = str(float(self.childs[0]) - float(self.childs[1]))
                 try:
@@ -194,8 +197,10 @@ class Tree:
                     string += '( ' + make_string(child) + ' )'
                 else:
                     string += make_string(child)
-                if current_node.operation in ('u+', 'u-'):
-                    string += current_node.operation[1]
+                if current_node.operation == 'u+':
+                    continue
+                elif current_node.operation == 'u-':
+                    string = '-' + string
                 else:
                     string += current_node.operation
             return string[:-1]
